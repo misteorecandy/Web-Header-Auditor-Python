@@ -1,9 +1,19 @@
-# 🛡️ Web Header Security Auditor (Python CLI)
+# 🛡️ Web Security Recon Suite (Python CLI)
 **Autor:** Sylvio Andrés Burgos (misteorecandy)  
 **Licencia:** MIT License  
 **Lenguaje:** Python 3  
 
-Herramienta ligera de línea de comandos (CLI) desarrollada en Python para realizar auditorías rápidas de seguridad HTTP. Analiza la respuesta de servidores web en tiempo real para detectar fugas de información tecnológica (*Server Banner Grabbing*) y verificar la ausencia de cabeceras defensivas críticas contra ataques de Clickjacking, XSS y MIME-sniffing.
+Suite ligera de herramientas de línea de comandos (CLI) desarrollada en Python para automatizar la fase de reconocimiento y enumeración web en auditorías de seguridad. Permite detectar fugas de información tecnológica (*Server Banner Grabbing*), evaluar cabeceras defensivas HTTP y descubrir directorios o archivos ocultos en servidores autorizados.
+
+---
+
+## 📦 Módulos Incluidos
+
+### 1. Auditor de Cabeceras (`auditor_web.py`)
+Analiza la respuesta del servidor en tiempo real para detectar fugas de versión del software web y verificar la ausencia de cabeceras críticas (`X-Frame-Options`, `X-Content-Type-Options`, `Strict-Transport-Security`, `Content-Security-Policy`).
+
+### 2. Buscador de Rutas Ocultas (`buscador_rutas.py`)
+Realiza enumeración de directorios (*Directory Fuzzing*) probando rutas sensibles comunes (`/admin`, `/login`, `/.env`, `/.git`, `/backup`, etc.) e interpretando los códigos de estado HTTP (`200 OK`, `403 Forbidden`, `301/302 Redirect`).
 
 ---
 
@@ -11,13 +21,13 @@ Herramienta ligera de línea de comandos (CLI) desarrollada en Python para reali
 
 Asegurate de tener instalado **Python 3** en tu entorno (Linux, Termux, Windows o macOS).
 
-1. Cloná este repositorio en tu máquina local:
+1. **Cloná este repositorio en tu máquina local:**
    ```bash
    git clone https://github.com
    cd Web-Header-Auditor-Python
    ```
 
-2. Instalá la librería `requests`:
+2. **Instalá la dependencia necesaria:**
    ```bash
    pip install requests
    ```
@@ -26,13 +36,14 @@ Asegurate de tener instalado **Python 3** en tu entorno (Linux, Termux, Windows 
 
 ## 🚀 Modo de Uso
 
-Ejecutá el script desde tu terminal pasando como argumento el dominio o la URL del objetivo autorizado que deseás auditar:
+Ejecutá cualquiera de los dos módulos desde tu terminal pasando como argumento el dominio o la URL del objetivo autorizado que deseás auditar:
 
+### Auditoría de Cabeceras HTTP:
 ```bash
 python3 auditor_web.py scanme.nmap.org
 ```
 
-### Ejemplo de Salida en Terminal:
+**Ejemplo de salida:**
 ```text
 [*] Analizando objetivo: http://nmap.org
 ---------------------------------------------
@@ -45,9 +56,24 @@ python3 auditor_web.py scanme.nmap.org
   [!] ALERTA: Falta Content-Security-Policy
 ```
 
+### Búsqueda de Directorios Ocultos:
+```bash
+python3 buscadorrutas.py scanme.nmap.org
+```
+
+**Ejemplo de salida:**
+```text
+[*] Iniciando búsqueda de rutas ocultas en: http://nmap.org/
+-------------------------------------------------------
+  [301 REDIRECCIÓN] -> http://nmap.org/images
+  [301 REDIRECCIÓN] -> http://nmap.org/shared
+-------------------------------------------------------
+[*] Escaneo finalizado.
+```
+
 ---
 
-## 🔍 Vectores Evaluados
+## 🔍 Vectores Evaluados (Cabeceras)
 
 | Cabecera HTTP | Función Defensiva | Riesgo si está Ausente |
 | :--- | :--- | :--- |
@@ -60,4 +86,4 @@ python3 auditor_web.py scanme.nmap.org
 ---
 
 ## ⚖️ Aviso Legal (Disclaimer)
-Esta herramienta fue diseñada exclusivamente con fines educativos, de investigación y para realizar auditorías de seguridad en sistemas propios o con autorización explícita por escrito. El autor no se hace responsable por el uso indebido de este código.
+Estas herramientas fueron desarrolladas exclusivamente con fines educativos, de investigación y para realizar auditorías de seguridad en sistemas propios o con autorización explícita por escrito. El autor no se hace responsable por el uso indebido de este código.
