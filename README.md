@@ -3,17 +3,20 @@
 **Licencia:** MIT License  
 **Lenguaje:** Python 3  
 
-Suite ligera de herramientas de línea de comandos (CLI) desarrollada en Python para automatizar la fase de reconocimiento y enumeración web en auditorías de seguridad. Permite detectar fugas de información tecnológica (*Server Banner Grabbing*), evaluar cabeceras defensivas HTTP y descubrir directorios o archivos ocultos en servidores autorizados.
+Suite de herramientas de línea de comandos (CLI) desarrollada en Python para automatizar la fase de reconocimiento pasivo, enumeración y análisis OSINT en auditorías de seguridad web. Permite evaluar cabeceras HTTP, descubrir directorios sensibles ocultos y extraer inteligencia directamente del código fuente HTML de servidores autorizados.
 
 ---
 
 ## 📦 Módulos Incluidos
 
 ### 1. Auditor de Cabeceras (`auditor_web.py`)
-Analiza la respuesta del servidor en tiempo real para detectar fugas de versión del software web y verificar la ausencia de cabeceras críticas (`X-Frame-Options`, `X-Content-Type-Options`, `Strict-Transport-Security`, `Content-Security-Policy`).
+Analiza la respuesta HTTP del servidor en tiempo real para detectar fugas de versión del software web (*Server Banner Grabbing*) y verificar la ausencia de cabeceras defensivas críticas (`X-Frame-Options`, `X-Content-Type-Options`, `Strict-Transport-Security`, `Content-Security-Policy`).
 
 ### 2. Buscador de Rutas Ocultas (`buscador_rutas.py`)
 Realiza enumeración de directorios (*Directory Fuzzing*) probando rutas sensibles comunes (`/admin`, `/login`, `/.env`, `/.git`, `/backup`, etc.) e interpretando los códigos de estado HTTP (`200 OK`, `403 Forbidden`, `301/302 Redirect`).
+
+### 3. Extractor de Inteligencia HTML (`extractor_html.py`)
+Ejecuta análisis estático sobre el código fuente crudo de la página web utilizando **Expresiones Regulares (`re`)** para extraer comentarios olvidados por los desarrolladores (`<!-- ... -->`) y detectar correos electrónicos expuestos.
 
 ---
 
@@ -36,39 +39,36 @@ Asegurate de tener instalado **Python 3** en tu entorno (Linux, Termux, Windows 
 
 ## 🚀 Modo de Uso
 
-Ejecutá cualquiera de los dos módulos desde tu terminal pasando como argumento el dominio o la URL del objetivo autorizado que deseás auditar:
+Ejecutá cualquiera de los tres módulos desde tu terminal pasando como argumento el dominio o la URL del objetivo autorizado que deseás auditar:
 
-### Auditoría de Cabeceras HTTP:
+### 1. Auditoría de Cabeceras HTTP:
 ```bash
 python3 auditor_web.py scanme.nmap.org
 ```
 
-**Ejemplo de salida:**
-```text
-[*] Analizando objetivo: http://nmap.org
----------------------------------------------
-[+] Tecnología del Servidor: Apache/2.4.7 (Ubuntu)
-
-[*] Auditoría de Cabeceras de Seguridad:
-  [!] ALERTA: Falta X-Frame-Options
-  [!] ALERTA: Falta X-Content-Type-Options
-  [!] ALERTA: Falta Strict-Transport-Security
-  [!] ALERTA: Falta Content-Security-Policy
-```
-
-### Búsqueda de Directorios Ocultos:
+### 2. Búsqueda de Directorios Ocultos:
 ```bash
 python3 buscadorrutas.py scanme.nmap.org
 ```
 
-**Ejemplo de salida:**
+### 3. Extracción de Comentarios y Correos (OSINT HTML):
+```bash
+python3 extractor_html.py scanme.nmap.org
+```
+
+**Ejemplo de salida (`extractor_html.py`):**
 ```text
-[*] Iniciando búsqueda de rutas ocultas en: http://nmap.org/
--------------------------------------------------------
-  [301 REDIRECCIÓN] -> http://nmap.org/images
-  [301 REDIRECCIÓN] -> http://nmap.org/shared
--------------------------------------------------------
-[*] Escaneo finalizado.
+[*] Extrayendo inteligencia del código fuente de: http://nmap.org
+------------------------------------------------------------
+[+] Comentarios de desarrollador encontrados (4):
+  --> Google Analytics Code
+  --> END Google Analytics Code
+  --> content
+  --> wrapper
+
+[+] Correos electrónicos detectados (0):
+  [-] Ningún correo expuesto en el HTML.
+------------------------------------------------------------
 ```
 
 ---
@@ -77,7 +77,7 @@ python3 buscadorrutas.py scanme.nmap.org
 
 | Cabecera HTTP | Función Defensiva | Riesgo si está Ausente |
 | :--- | :--- | :--- |
-| **`Server`** | Identifica el software y versión del servidor. | Facilita la búsqueda de exploits específicos (*Information Disclosure*). |
+| **`Server`** | Identifies software and version of the web server. | Facilita la búsqueda de exploits específicos (*Information Disclosure*). |
 | **`X-Frame-Options`** | Controla si la web puede cargarse dentro de un `<iframe\>` externo. | Exposición a ataques de secuestro de clics (*Clickjacking*). |
 | **`X-Content-Type-Options`** | Impide que el navegador adivine el tipo de archivo (MIME). | Ejecución de código malicioso disfrazado (*MIME-sniffing*). |
 | **`Strict-Transport-Security`** | Obliga al navegador a conectarse únicamente vía HTTPS cifrado. | Vulnerabilidad ante ataques *Man-in-the-Middle* (Downgrade). |
